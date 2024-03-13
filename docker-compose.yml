@@ -1,0 +1,65 @@
+version: '3.6'
+
+services:
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    ports:
+      - ${PRIVATE_HOST}:${NGINX_HOST_PORT}:80
+    volumes:
+      - ./docker/nginx/nginx/:/app
+      - ${PWD}/docker/nginx/logs:/var/log/nginx
+    networks:
+      - f-network
+
+  api:
+    build:
+      context: ./docker/api
+      args:
+        DOCKER_UID: ${DOCKER_UID:-0}
+        DOCKER_GID: ${DOCKER_GID:-0}
+    tty: true
+    stdin_open: true
+    command: sh /docker-entrypoint.sh
+    volumes:
+      - ${PWD}/api/.:/app
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - f-network
+
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql-vol:/var/lib/mysql
+    ports:
+      - ${PRIVATE_HOST}:${MYSQL_HOST_PORT}:3306
+    networks:
+      - f-network
+
+  redis:
+    image: redis:5.0.0-alpine
+    restart: always
+    volumes:
+      - redis-vol:/data
+    ports:
+      - ${PRIVATE_HOST}:${REDIS_HOST_PORT}:6379
+    networks:
+      - f-network
+
+volumes:
+  mysql-vol:
+    driver: local
+  redis-vol:
+    driver: local
+
+networks:
+  f-network:
+    driver: bridge
