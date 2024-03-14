@@ -14,5 +14,25 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get("/", function () {
-    return view("welcome");
+    return view("home");
+});
+
+Route::get("/gioi-thieu", function () {
+    return view("about");
+});
+
+Route::get("/du-an", function () {
+    return view("projects");
+});
+
+Route::get("/tin-tuc", function () {
+    return view("news");
+});
+
+Route::get("/lien-he", function () {
+    return view("contact");
+});
+
+Route::get("/d-metropole-ha-tinh", function () {
+    return view("d-metropole");
 });
